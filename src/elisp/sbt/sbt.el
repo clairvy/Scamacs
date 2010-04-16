@@ -62,7 +62,7 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
 ;; 	  (remove-if 'minibufferp (buffer-list))))
 
 (defun sbt-process-output (output)
-  (let ((cleaned-output (replace-regexp-in-string ansi-color-regexp "" output)))
+  (let ((cleaned-output output)) ;;; (replace-regexp-in-string ansi-color-regexp "" output)))
     (if sbt-use-ui
         (cond
          ((string-match "\\[info\\] == test-start ==" cleaned-output) (sbt-update-ui 'running))
@@ -75,6 +75,7 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
   (interactive)  
   (let ((root-path (sbt-find-path-to-parent-project))
 	(buffer (shell sbt-build-buffer-name)))
+    (set (make-local-variable 'sbt-buffer) buffer)
     (set (make-local-variable 'compilation-error-regexp-alist)
          '(("^\\[error\\] \\([_.a-zA-Z0-9/-]+[.]scala\\):\\([0-9]+\\):" 1 2 nil 2 nil)))
     (set (make-local-variable 'compilation-mode-font-lock-keywords)
@@ -91,11 +92,11 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
     (set (make-local-variable 'comint-scroll-to-bottom-on-output) t)
     (set (make-local-variable 'comint-prompt-read-only) t)
     (set (make-local-variable 'comint-output-filter-functions) '(sbt-process-output
-                                                                 ansi-color-process-output
+                                                                 ;;; ansi-color-process-output
                                                                  comint-postoutput-scroll-to-bottom))
     (local-set-key (kbd "C-c C-a") 'sbt-switch)
     (compilation-shell-minor-mode t)
-    (comint-send-string buffer (concat "cd " root-path "\n xsbt\n"))))
+    (comint-send-string buffer (concat "cd " root-path "\n sbt-no-color\n"))))
 
 (defun sbt-switch ()
   "Switch to the sbt shell (create if necessary) if or if already there, back"
@@ -113,6 +114,20 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
     (let ((inhibit-read-only t))
          (erase-buffer)
 	 (comint-send-input t))))
+
+
+
+;;;###autoload
+(defun sbt-do-auto-compile ()
+  "Compile the code."
+  (interactive)
+  ;;; FIXME -- detect if we're saving a Scala file
+  (if (get-buffer sbt-build-buffer-name)
+      ((message "starting compile")
+       (sbt-clear)
+       (comint-send-string (get-buffer sbt-build-buffer-name) "compile\n"))))
+
+(add-to-list 'after-save-hook 'sbt-do-auto-compile)
 
 (defun sbt-project-dir-p (path)
   "Does a project/build.properties exists in the given path."
