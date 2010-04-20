@@ -117,15 +117,21 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
 
 
 
+
 ;;;###autoload
 (defun sbt-do-auto-compile ()
   "Compile the code."
   (interactive)
   ;;; FIXME -- detect if we're saving a Scala file
   (if (get-buffer sbt-build-buffer-name)
-      ((message "starting compile")
-       (sbt-clear)
-       (comint-send-string (get-buffer sbt-build-buffer-name) "compile\n"))))
+      (sbt-inner-compile)))
+
+(defun sbt-inner-compile () 
+  "really compile the code"
+  (message "starting compile")
+  (sbt-clear)
+  (comint-send-string (get-buffer sbt-build-buffer-name) "compile\n"))
+
 
 (add-to-list 'after-save-hook 'sbt-do-auto-compile)
 
