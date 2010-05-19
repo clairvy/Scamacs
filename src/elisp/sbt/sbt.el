@@ -130,7 +130,7 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
   "really compile the code"
   (message "starting compile")
   (sbt-clear)
-  (comint-send-string (get-buffer sbt-build-buffer-name) "compile\n"))
+  (comint-send-string (get-buffer sbt-build-buffer-name) "test-compile\n"))
 
 
 (add-to-list 'after-save-hook 'sbt-do-auto-compile)
