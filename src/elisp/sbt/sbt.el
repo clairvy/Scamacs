@@ -74,7 +74,11 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
   "Launch the sbt shell."
   (interactive)  
   (let ((root-path (sbt-find-path-to-parent-project))
-	(buffer (shell sbt-build-buffer-name)))
+        (buffer (ansi-term (read-from-minibuffer "Run program: "
+                                                 (or explicit-shell-file-name
+                                                     (getenv "ESHELL")
+                                                     (getenv "SHELL")
+                                                     "/bin/sh")) sbt-build-buffer-name)))
     (set (make-local-variable 'sbt-buffer) buffer)
     (set (make-local-variable 'compilation-error-regexp-alist)
          '(("^\\[error\\] \\([_.a-zA-Z0-9/-]+[.]scala\\):\\([0-9]+\\):" 1 2 nil 2 nil)))
@@ -96,7 +100,7 @@ see the file `COPYING'.  If not, write to the Free Software Foundation, Inc.,
                                                                  comint-postoutput-scroll-to-bottom))
     (local-set-key (kbd "C-c C-a") 'sbt-switch)
     (compilation-shell-minor-mode t)
-    (comint-send-string buffer (concat "cd " root-path "\n sbt-no-color\n"))))
+    (comint-send-string buffer (concat "cd " root-path "\nsbt\n"))))
 
 (defun sbt-switch ()
   "Switch to the sbt shell (create if necessary) if or if already there, back"
